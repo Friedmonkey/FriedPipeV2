@@ -64,13 +64,13 @@ namespace FriedPipeConsole
             var doubleOf = await intPipeline.RequestSpecific(input, "Int");
             Console.WriteLine($"The double of {input} is {doubleOf}");
 
-            Pipe<int> intPipe = new Pipe<int>("Int", "MessagingApp");
-            intPipe.OnRequest += IntPipe_OnRequest;
+            //Pipe<int> intPipe = new Pipe<int>("Int", "MessagingApp");
+            //intPipe.OnRequest += IntPipe_OnRequest;
 
-            Pipe<int> intPipe2 = new Pipe<int>("Int", "MessagingApp");
-            intPipe2.OnRequest += IntPipe_OnRequest;
+            //Pipe<int> intPipe2 = new Pipe<int>("Int", "MessagingApp");
+            //intPipe2.OnRequest += IntPipe_OnRequest;
 
-            int result = await intPipe.Request(5);
+            //int result = await intPipe.Request(5);
         }
 
         private static int IntPipe_OnRequest(PipeBase<int> callerPipe, FriedPipeEventArgs<int> e)
