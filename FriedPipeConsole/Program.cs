@@ -45,20 +45,24 @@ namespace FriedPipeConsole
             chatPipe.Set("Hello world"); //will send hello world (which WE DONT pick up)
 
 
-            Pipeline<int> intPipeline = new Pipeline<int>("MessagingApp");
+            //Pipeline<int> intPipeline = new Pipeline<int>("MessagingApp");
 
-            Pipe<int> intPipe = new Pipe<int>(Name:"Int",Channel: "MessagingApp");
-            intPipe.OnRequest += IntPipe_OnRequest;
+            //Pipe<int> intPipe = new Pipe<int>(Name:"Int",Channel: "MessagingApp");
+            //intPipe.OnRequest += IntPipe_OnRequest;
 
-            intPipeline.Connect(intPipe);
+            //intPipeline.Connect(intPipe);
 
-            //var doubleOf = await intPipe.Request(5);
-            //this doest work it doest trigger its own request so we must simulate one
-            //thats why we use pipeline because it has usefull features like this
+            ////var doubleOf = await intPipe.Request(5);
+            ////this doest work it doest trigger its own request so we must simulate one
+            ////thats why we use pipeline because it has usefull features like this
+            //const int input = 5;
+            //var doubleOf = await intPipeline.RequestSpecific(input,"Int");
+            //Console.WriteLine($"The double of {input} is {doubleOf}");
+            Pipeline<int> intPipeline = new Pipeline<int>("MessagingApp","Int");
+            intPipeline.OnAnyRequest += IntPipe_OnRequest;
             const int input = 5;
-            var doubleOf = await intPipeline.RequestSpecific(input,"Int");
+            var doubleOf = await intPipeline.RequestSpecific(input, "Int");
             Console.WriteLine($"The double of {input} is {doubleOf}");
-
         }
 
         private static int IntPipe_OnRequest(PipeBase<int> callerPipe, FriedPipeEventArgs<int> e)

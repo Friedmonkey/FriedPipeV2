@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace FriedPipeV2
 {
 	public delegate void FriedPipelineHandler<Type>(PipeBase<Type> callerPipe, FriedPipeEventArgs<Type> e);
+	public delegate Type FriedPipelineRequestHandler<Type>(PipeBase<Type> callerPipe, FriedPipeEventArgs<Type> e);
 	public class PipelineBase<Type>
 	{
 		/// <summary>
@@ -41,6 +42,7 @@ namespace FriedPipeV2
 		public string DefaultPipeChannel { get; protected set; } = "Pipe";
 
 		public event FriedPipelineHandler<Type> OnAnyChange;
+		public event FriedPipelineRequestHandler<Type> OnAnyRequest;
 
 		private List<PipeBase<Type>> Pipes = new List<PipeBase<Type>>();
 
@@ -76,11 +78,13 @@ namespace FriedPipeV2
 			if (GetPipe(pipe.Name, pipe.Channel) == null) //if it doest exist yet
 			{
 				pipe.OnChange += OnAnyPipeChange;
+                pipe.OnRequest += OnAnyPipeRequest;
 				Pipes.Add(pipe);
 			}
 			else
 				throw new OverflowException($"A pipe with the same signature (name: {pipe.Name}, channel: {pipe.Channel}) already exists!");
 		}
+
         /// <summary>
         /// Remove an connected pipe from the pipeline based on its name and channel
         /// </summary>
@@ -100,6 +104,7 @@ namespace FriedPipeV2
 		public void Disconnect(PipeBase<Type> pipe)
 		{
 			pipe.OnChange -= OnAnyPipeChange;
+			pipe.OnRequest -= OnAnyPipeRequest;
 			Pipes.Remove(pipe);
 		}
 		/// <summary>
@@ -116,6 +121,7 @@ namespace FriedPipeV2
 				if (position > Pipes.Count || position < 0)
 					throw new ArgumentOutOfRangeException("We dont have that amount of pipes. " + nameof(position) + " was out of range!");
 				pipe.OnChange += OnAnyPipeChange;
+				pipe.OnRequest += OnAnyPipeRequest;
 				Pipes.Insert(position, pipe);
 			}
 		}
@@ -130,6 +136,7 @@ namespace FriedPipeV2
 				throw new ArgumentOutOfRangeException("We dont have that amount of pipes. " + nameof(position) + " was out of range!");
 
 			Pipes[position].OnChange -= OnAnyPipeChange;
+			Pipes[position].OnRequest -= OnAnyPipeRequest;
 			Pipes.RemoveAt(position);
 		}
 		/// <summary>
@@ -253,6 +260,12 @@ namespace FriedPipeV2
 		{
 			OnAnyChange?.Invoke(sender, e);
 		}
+
+        private Type OnAnyPipeRequest(PipeBase<Type> sender, FriedPipeEventArgs<Type> e)
+        {
+			return OnAnyRequest.Invoke(sender, e);
+        }
+
         /// <summary>
         /// An indexer to go trough this pipeline and get a pipe
         /// </summary>
