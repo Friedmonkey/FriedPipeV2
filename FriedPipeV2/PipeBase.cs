@@ -17,6 +17,12 @@ namespace FriedPipeV2
 	{
 		public event FriedPipeHandler<Type> OnChange;
 		public event FriedPipeRequestHandler<Type> OnRequest;
+		/// <summary>
+		/// Creatse a pipe base using the name and potentually sets its channel and the onchange method
+		/// </summary>
+		/// <param name="Name">The name of this pipe</param>
+		/// <param name="Channel">the channel of this pipe (Default pipe channel is "Pipe" whenever you leave it as null)</param>
+		/// <param name="OnChange">This will trigger when the pipe gets changed</param>
 		public PipeBase(string Name, string Channel = null, FriedPipeHandler<Type> OnChange = null)
 		{
 			if (Name != null)
@@ -43,6 +49,12 @@ namespace FriedPipeV2
 		public bool isExternal { get; protected set; } = false;
 		public bool isInverted { get; protected set; } = false;
 		private bool Changed { get; set; } = false;
+
+		/// <summary>
+		/// Intercepts whenever we GET a valid pipeobject and checks some stuff
+		/// and triggers the onchange and onrequest
+		/// </summary>
+		/// <param name="pipeInfo">the pipeinfo we just intercepted</param>
 		private void intercept(FriedPipeInfo<Type> pipeInfo)
 		{
 			if (pipeInfo.RequestMode)//was it a request message?
@@ -67,11 +79,18 @@ namespace FriedPipeV2
 			}
 		}
 
-
+		/// <summary>
+		/// Sets a pipe value (will trigger any other pipe's OnChange but not THIS pipe's OnChange)
+		/// </summary>
+		/// <param name="Object">The pipeobject to set</param>
 		public void Set(Type Object)
 		{
 			set(Object, false);
 		}
+		/// <summary>
+		/// Gets the current Pipeobject
+		/// </summary>
+		/// <returns>the current pipeobject</returns>
 		public Type Get()
 		{
 			if (isExternal)
@@ -83,6 +102,10 @@ namespace FriedPipeV2
 				return InternalValue;
 			}
 		}
+
+		/// <summary>
+		/// An easy access the the internal value (setting this COULD trigger the OnChange of other pipes)
+		/// </summary>
 		public Type Value
 		{
 			set
@@ -96,6 +119,13 @@ namespace FriedPipeV2
 			}
 		}
 
+		/// <summary>
+		/// Makes this pipe External meaning any other pipe with the same name and channel will revice messages.
+		/// and that this pipe is able to recive messages
+		/// 
+		/// YOU MOST LIKELY WILL NOT HAVE TO CALL THIS UNLESS YOU HAVE CALLED Retract() BECAUSE A Pipe(not PipeBase) WILL BE EXTENDED ON DEFAULT
+		/// </summary>
+		/// <exception cref="Exception">If the pipe is already extended</exception>
 		public void Extend()
 		{
 			if (isExternal)
@@ -106,7 +136,13 @@ namespace FriedPipeV2
 				isExternal = true;
 			}
 		}
-		public void Retract()
+        /// <summary>
+        /// Makes this pipe Internal only meaning any other pipe with the same name and channel NOT revice messages when we send them.
+        /// and that this pipe is also NOT able to recive messages.
+        /// 
+        /// </summary>
+        /// <exception cref="Exception">If the pipe is already retracted</exception>
+        public void Retract()
 		{
 			if (isExternal)
 			{
@@ -116,16 +152,34 @@ namespace FriedPipeV2
 			else
 				throw new Exception("pipe cant be retracted");
 		}
+
+		/// <summary>
+		/// Inverts the pipe (only changing the bool but not doing any registering or unregistering)
+		/// USE WITH CAUTION
+		/// </summary>
+		[Obsolete("Use Set() instead of inverting and sending")]
 		public void Invert()
 		{
 			isInverted = !isInverted;
 			isExternal = !isExternal;
 		}
-
+		/// <summary>
+		/// Sends a message to all pipes with the same name and channel as this pipe (will also trigger its own OnChange.
+		/// use Set() to only trigger the onchange of every pipe with the same name and channel except this pipe)
+		/// </summary>
+		/// <param name="Object">The pipeobject to send</param>
 		public void Send(Type Object)
 		{
 			send(Object, false);
 		}
+		/// <summary>
+		/// Triggers the OnRequest on every pipe with the same name and channel except this pipe.
+		/// Usefull for actually achiving communication
+		/// 
+		/// needs to be awaited
+		/// </summary>
+		/// <param name="Object">The object to send as request</param>
+		/// <returns>The same type of object that the other pipe decided to return</returns>
 		public async Task<Type> Request(Type Object)
 		{
 			bool wasExternal = this.isExternal;
@@ -158,7 +212,11 @@ namespace FriedPipeV2
 			return this.TempValue;
 		}
 
-
+		/// <summary>
+		/// the internal send method to actually send a pipe message to all pipes with the same name and channel
+		/// </summary>
+		/// <param name="obj">the object to send</param>
+		/// <param name="request">a bool to indicate weather this should be treated as an request or not</param>
 		private void send(Type obj, bool request)
 		{
 			bool wasExternal = this.isExternal;
@@ -180,6 +238,11 @@ namespace FriedPipeV2
 			if (wasExternal)
 				this.Extend();
 		}
+		/// <summary>
+		/// the internal set method to set the pipe without triggering its own OnChange but triggering the onchange of all other pipes with the same name and channel
+		/// </summary>
+		/// <param name="obj">the object to set</param>
+		/// <param name="request">a bool to indicate weather this should be treated as an request or not</param>
 		private void set(Type obj, bool request)
 		{
 			if (isExternal)
