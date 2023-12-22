@@ -125,12 +125,13 @@ namespace FriedPipeV2
 		/// 
 		/// YOU MOST LIKELY WILL NOT HAVE TO CALL THIS UNLESS YOU HAVE CALLED Retract() BECAUSE A Pipe(not PipeBase) WILL BE EXTENDED ON DEFAULT
 		/// </summary>
-		/// <exception cref="Exception">If the pipe is already extended</exception>
+		//// <exception cref="Exception">If the pipe is already extended</exception>
 		public void Extend()
 		{
-			if (isExternal)
-				throw new Exception("pipe cant be extended");
-			else
+			if (!isExternal)
+			//if (isExternal)
+			//	throw new Exception("pipe cant be extended");
+			//else
 			{
 				RegisterChannel(this.CompChannel);
 				isExternal = true;
@@ -141,7 +142,7 @@ namespace FriedPipeV2
         /// and that this pipe is also NOT able to recive messages.
         /// 
         /// </summary>
-        /// <exception cref="Exception">If the pipe is already retracted</exception>
+        //// <exception cref="Exception">If the pipe is already retracted</exception>
         public void Retract()
 		{
 			if (isExternal)
@@ -149,8 +150,8 @@ namespace FriedPipeV2
 				UnRegisterChannel(this.CompChannel);
 				isExternal = false;
 			}
-			else
-				throw new Exception("pipe cant be retracted");
+			//else
+			//	throw new Exception("pipe cant be retracted");
 		}
 
 		/// <summary>
@@ -353,7 +354,7 @@ namespace FriedPipeV2
 		#region send to channel
 		private void SendToChannelB(string channelName, Type message, bool request)
 		{
-			SendToChannelC(channelName, typeof(string).AssemblyQualifiedName, message, request);
+			SendToChannelC(channelName, typeof(Type).AssemblyQualifiedName, message, request);
 		}
 		private void SendToChannelC(string channelName, string dataType, Type Object, bool request)
 		{
